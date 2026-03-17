@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad — дашборд</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #ff6a9b;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --radius: 16px;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #f87171;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Golos Text', sans-serif;
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 0%, rgba(124,106,255,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 90% 100%, rgba(255,106,155,0.08) 0%, transparent 50%),
+        var(--bg);
+      pointer-events: none;
+    }
+
+    /* Sidebar */
+    .layout {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 8px 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .logo-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background: var(--surface); color: var(--text); }
+    .nav-item.active { background: rgba(124,106,255,0.12); color: var(--accent); }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-email { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .logout-btn {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 6px;
+      transition: color 0.15s;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+    .logout-btn:hover { color: var(--error); }
+
+    /* Main */
+    .main {
+      padding: 32px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover { background: #6b5ae0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,106,255,0.3); }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .stat-value { font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 700; }
+    .stat-sub { font-size: 12px; color: var(--muted); }
+
+    /* Transcriptions list */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .transcription-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .transcription-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .transcription-card:hover {
+      border-color: rgba(124,106,255,0.3);
+      background: var(--surface2);
+    }
+
+    .tc-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(124,106,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .tc-info { flex: 1; min-width: 0; }
+    .tc-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tc-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; }
+
+    .tc-status {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .status-done { background: rgba(74,222,128,0.1); color: var(--success); }
+    .status-pending { background: rgba(251,191,36,0.1); color: var(--warning); }
+    .status-processing { background: rgba(124,106,255,0.1); color: var(--accent); }
+    .status-error { background: rgba(248,113,113,0.1); color: var(--error); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-state .empty-icon { font-size: 48px; opacity: 0.5; }
+    .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+    .empty-state p { font-size: 14px; }
+
+    .loading-skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 20px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        StudySquad
+      </div>
+
+      <a href="dashboard.html" class="nav-item active">
+        <span class="icon">🏠</span> Главная
+      </a>
+      <a href="upload.html" class="nav-item">
+        <span class="icon">🎙️</span> Загрузить лекцию
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">📚</span> Предметы
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">👥</span> Моя группа
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">🧠</span> Квизы
+      </a>
+
+      <div class="sidebar-bottom">
+        <div class="user-block">
+          <div class="avatar" id="avatarInitial">?</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Загрузка...</div>
+            <div class="user-email" id="userEmail"></div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="page-header">
+        <h1 class="page-title">Мои транскрипции</h1>
+        <a href="upload.html" class="btn-primary">
+          + Загрузить лекцию
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Всего лекций</div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-sub">за всё время</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Готово</div>
+          <div class="stat-value" id="statDone">—</div>
+          <div class="stat-sub">транскрипций</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Квизов создано</div>
+          <div class="stat-value" id="statQuizzes">—</div>
+          <div class="stat-sub">для повторения</div>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">Последние загрузки</div>
+        </div>
+        <div style="margin-top: 16px;">
+          <div class="transcription-list" id="list">
+            <!-- Loading skeletons -->
+            <div style="height: 80px; border-radius: 16px;" class="loading-skeleton"></div>
+            <div style="height: 80px; border-radius: 16px;" class="loading-skeleton"></div>
+            <div style="height: 80px; border-radius: 16px;" class="loading-skeleton"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const CONFIG = { API_URL: 'ТВОЙ_API_GATEWAY_URL' }
+
+    // Проверка авторизации
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+
+    if (!token) { window.location.href = 'index.html' }
+
+    // Заполняем данные пользователя
+    if (user) {
+      document.getElementById('userName').textContent = user.name || user.email
+      document.getElementById('userEmail').textContent = user.email
+      document.getElementById('avatarInitial').textContent = (user.name || user.email || '?')[0].toUpperCase()
+    }
+
+    // Загружаем транскрипции
+    async function loadTranscriptions() {
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/transcriptions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+        renderList(data.transcriptions || [])
+        renderStats(data.transcriptions || [])
+      } catch (e) {
+        document.getElementById('list').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Не удалось загрузить</h3>
+            <p>Проверь соединение и обнови страницу</p>
+          </div>`
+      }
+    }
+
+    function renderStats(items) {
+      document.getElementById('statTotal').textContent = items.length
+      document.getElementById('statDone').textContent = items.filter(i => i.status === 'done').length
+      document.getElementById('statQuizzes').textContent = items.reduce((acc, i) => acc + (i.quiz_count || 0), 0)
+    }
+
+    function renderList(items) {
+      const list = document.getElementById('list')
+      if (!items.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🎙️</div>
+            <h3>Пока нет лекций</h3>
+            <p>Загрузи первую запись и получи транскрипцию</p>
+          </div>`
+        return
+      }
+
+      const statusMap = {
+        done: ['status-done', 'Готово'],
+        pending: ['status-pending', 'Ожидает'],
+        processing: ['status-processing', 'Обработка...'],
+        error: ['status-error', 'Ошибка'],
+      }
+
+      list.innerHTML = items.map(item => {
+        const [cls, label] = statusMap[item.status] || ['status-pending', 'Ожидает']
+        const date = new Date(item.created_at).toLocaleDateString('ru-RU')
+        return `
+          <a href="transcription.html?id=${item.id}" class="transcription-card">
+            <div class="tc-icon">🎙️</div>
+            <div class="tc-info">
+              <div class="tc-title">${item.title}</div>
+              <div class="tc-meta">
+                <span>${item.subject_name || 'Без предмета'}</span>
+                <span>${date}</span>
+                <span>${item.original_filename}</span>
+              </div>
+            </div>
+            <div class="tc-status ${cls}">${label}</div>
+          </a>`
+      }).join('')
+    }
+
+    function logout() {
+      localStorage.clear()
+      window.location.href = 'index.html'
+    }
+
+    loadTranscriptions()
+  </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad — загрузить лекцию</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #ff6a9b;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --radius: 16px;
+      --success: #4ade80;
+      --error: #f87171;
+    }
+
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: 'Golos Text', sans-serif; }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(124,106,255,0.1) 0%, transparent 60%), var(--bg);
+      pointer-events: none;
+    }
+
+    .layout { position: relative; z-index: 1; display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+    .sidebar { border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; }
+
+    .logo { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; padding: 8px 12px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s ease; text-decoration: none; }
+    .nav-item:hover { background: var(--surface); color: var(--text); }
+    .nav-item.active { background: rgba(124,106,255,0.12); color: var(--accent); }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+    .user-block { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .logout-btn { font-size: 12px; color: var(--muted); cursor: pointer; padding: 4px 12px; border-radius: 6px; background: none; border: none; font-family: inherit; }
+    .logout-btn:hover { color: var(--error); }
+
+    /* Main */
+    .main { padding: 40px; display: flex; flex-direction: column; gap: 32px; max-width: 640px; }
+
+    .back-link { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; text-decoration: none; width: fit-content; }
+    .back-link:hover { color: var(--text); }
+
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .page-sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
+
+    /* Form */
+    .form { display: flex; flex-direction: column; gap: 20px; }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .label span { color: var(--muted); font-weight: 400; }
+
+    .input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .input:focus { border-color: rgba(124,106,255,0.5); }
+    .input::placeholder { color: var(--muted); }
+
+    select.input { cursor: pointer; }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: rgba(124,106,255,0.5);
+      background: rgba(124,106,255,0.04);
+    }
+
+    .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .dropzone-icon { font-size: 36px; }
+    .dropzone-title { font-size: 15px; font-weight: 600; }
+    .dropzone-sub { font-size: 13px; color: var(--muted); }
+    .dropzone-formats { font-size: 11px; color: var(--muted); background: var(--surface); border-radius: 6px; padding: 4px 10px; }
+
+    .file-selected {
+      background: rgba(74,222,128,0.06);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .file-selected.visible { display: flex; }
+    .file-name { font-weight: 600; color: var(--success); flex: 1; }
+    .file-size { font-size: 12px; color: var(--muted); }
+    .file-remove { cursor: pointer; color: var(--muted); font-size: 16px; }
+    .file-remove:hover { color: var(--error); }
+
+    /* Progress */
+    .progress-block { display: none; flex-direction: column; gap: 10px; }
+    .progress-block.visible { display: flex; }
+    .progress-label { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 100px; transition: width 0.3s ease; width: 0%; }
+
+    .btn-submit {
+      padding: 14px 28px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-submit:hover:not(:disabled) { background: #6b5ae0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,106,255,0.3); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .success-block {
+      display: none;
+      background: rgba(74,222,128,0.06);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .success-block.visible { display: flex; }
+    .success-icon { font-size: 36px; }
+    .success-title { font-size: 16px; font-weight: 600; color: var(--success); }
+    .success-sub { font-size: 14px; color: var(--muted); }
+    .btn-secondary { padding: 10px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 4px; transition: background 0.15s; }
+    .btn-secondary:hover { background: var(--surface2); }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo"><div class="logo-dot"></div>StudySquad</div>
+      <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Главная</a>
+      <a href="upload.html" class="nav-item active"><span class="icon">🎙️</span> Загрузить лекцию</a>
+      <a href="#" class="nav-item"><span class="icon">📚</span> Предметы</a>
+      <a href="#" class="nav-item"><span class="icon">👥</span> Моя группа</a>
+      <a href="#" class="nav-item"><span class="icon">🧠</span> Квизы</a>
+      <div class="sidebar-bottom">
+        <div class="user-block">
+          <div class="avatar" id="avatarInitial">?</div>
+          <div class="user-info"><div class="user-name" id="userName">...</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <a href="dashboard.html" class="back-link">← Назад</a>
+
+      <div>
+        <h1 class="page-title">Загрузить лекцию</h1>
+        <p class="page-sub">Загрузи аудиозапись — мы автоматически сделаем транскрипцию</p>
+      </div>
+
+      <div class="form" id="uploadForm">
+        <div class="field">
+          <label class="label">Название лекции</label>
+          <input type="text" class="input" id="title" placeholder="Например: Лекция 3 — Макроэкономика" />
+        </div>
+
+        <div class="field">
+          <label class="label">Предмет <span>(необязательно)</span></label>
+          <select class="input" id="subject">
+            <option value="">Выбери предмет</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label">Поделиться с группой <span>(необязательно)</span></label>
+          <select class="input" id="shareGroup">
+            <option value="">Только для меня</option>
+            <option value="group">Моя учебная группа</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label">Аудиофайл</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".mp3,.mp4,.wav,.m4a,.webm,.ogg" />
+            <div class="dropzone-icon">🎙️</div>
+            <div class="dropzone-title">Перетащи файл или нажми для выбора</div>
+            <div class="dropzone-sub">Максимальный размер — 25 МБ</div>
+            <div class="dropzone-formats">MP3 · MP4 · WAV · M4A · WEBM</div>
+          </div>
+          <div class="file-selected" id="fileSelected">
+            <span>📎</span>
+            <span class="file-name" id="fileName"></span>
+            <span class="file-size" id="fileSize"></span>
+            <span class="file-remove" onclick="removeFile()">✕</span>
+          </div>
+        </div>
+
+        <div class="progress-block" id="progressBlock">
+          <div class="progress-label">
+            <span id="progressLabel">Загружаем файл...</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="handleUpload()">
+          🚀 Загрузить и транскрибировать
+        </button>
+      </div>
+
+      <div class="success-block" id="successBlock">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Файл загружен!</div>
+        <div class="success-sub">Транскрипция готовится — это займёт пару минут.<br/>Мы обработаем её в фоне.</div>
+        <a href="dashboard.html" class="btn-secondary">Перейти к списку</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const CONFIG = { API_URL: 'ТВОЙ_API_GATEWAY_URL' }
+
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!token) { window.location.href = 'index.html' }
+    if (user) {
+      document.getElementById('userName').textContent = user.name || user.email
+      document.getElementById('avatarInitial').textContent = (user.name || user.email || '?')[0].toUpperCase()
+    }
+
+    let selectedFile = null
+
+    // Загружаем предметы
+    async function loadSubjects() {
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/subjects`, { headers: { Authorization: `Bearer ${token}` } })
+        const data = await res.json()
+        const select = document.getElementById('subject')
+        ;(data.subjects || []).forEach(s => {
+          const opt = document.createElement('option')
+          opt.value = s.id
+          opt.textContent = s.name
+          select.appendChild(opt)
+        })
+      } catch (e) {}
+    }
+
+    // Dropzone
+    const dropzone = document.getElementById('dropzone')
+    const fileInput = document.getElementById('fileInput')
+
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over') })
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'))
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault()
+      dropzone.classList.remove('drag-over')
+      const file = e.dataTransfer.files[0]
+      if (file) setFile(file)
+    })
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) setFile(fileInput.files[0])
+    })
+
+    function setFile(file) {
+      if (file.size > 25 * 1024 * 1024) { alert('Файл слишком большой. Максимум 25 МБ'); return }
+      selectedFile = file
+      document.getElementById('fileName').textContent = file.name
+      document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' МБ'
+      document.getElementById('fileSelected').classList.add('visible')
+      dropzone.style.display = 'none'
+    }
+
+    function removeFile() {
+      selectedFile = null
+      fileInput.value = ''
+      document.getElementById('fileSelected').classList.remove('visible')
+      dropzone.style.display = 'flex'
+    }
+
+    async function handleUpload() {
+      const title = document.getElementById('title').value.trim()
+      const subjectId = document.getElementById('subject').value
+      const shareGroup = document.getElementById('shareGroup').value
+
+      if (!title) { alert('Введи название лекции'); return }
+      if (!selectedFile) { alert('Выбери файл'); return }
+
+      const btn = document.getElementById('submitBtn')
+      btn.disabled = true
+      btn.textContent = 'Загружаем...'
+
+      const progressBlock = document.getElementById('progressBlock')
+      progressBlock.classList.add('visible')
+
+      try {
+        // 1. Генерируем UUID на фронте
+        const uuid = crypto.randomUUID()
+        const ext = selectedFile.name.split('.').pop()
+        const filename = `${uuid}.${ext}`
+
+        setProgress(10, 'Получаем ссылку для загрузки...')
+
+        // 2. Получаем presigned URL
+        const presignRes = await fetch(`${CONFIG.API_URL}/presign?filename=${filename}&title=${encodeURIComponent(title)}&subject_id=${subjectId}&share_group=${shareGroup}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const { upload_url, record_id } = await presignRes.json()
+
+        setProgress(30, 'Загружаем файл в хранилище...')
+
+        // 3. Загружаем файл напрямую в S3
+        await fetch(upload_url, {
+          method: 'PUT',
+          body: selectedFile,
+          headers: { 'Content-Type': selectedFile.type }
+        })
+
+        setProgress(100, 'Готово!')
+
+        // Показываем успех
+        document.getElementById('uploadForm').style.display = 'none'
+        document.getElementById('successBlock').classList.add('visible')
+
+      } catch (e) {
+        alert('Ошибка при загрузке. Попробуй ещё раз.')
+        btn.disabled = false
+        btn.textContent = '🚀 Загрузить и транскрибировать'
+        progressBlock.classList.remove('visible')
+      }
+    }
+
+    function setProgress(pct, label) {
+      document.getElementById('progressFill').style.width = pct + '%'
+      document.getElementById('progressPct').textContent = pct + '%'
+      document.getElementById('progressLabel').textContent = label
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'index.html' }
+
+    loadSubjects()
+  </script>
+</body>
+</html>
