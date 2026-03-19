@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad — квиз</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #ff6a9b;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --radius: 16px;
+      --success: #4ade80;
+      --error: #f87171;
+    }
+
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: 'Golos Text', sans-serif; }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(124,106,255,0.08) 0%, transparent 60%),
+        var(--bg);
+      pointer-events: none;
+    }
+
+    .layout { position: relative; z-index: 1; display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+    .sidebar { border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; }
+    .logo { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; padding: 8px 12px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s ease; text-decoration: none; }
+    .nav-item:hover { background: var(--surface); color: var(--text); }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+    .user-block { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .logout-btn { font-size: 12px; color: var(--muted); cursor: pointer; padding: 4px 12px; border-radius: 6px; background: none; border: none; font-family: inherit; }
+    .logout-btn:hover { color: var(--error); }
+
+    /* Main */
+    .main { padding: 40px; display: flex; flex-direction: column; gap: 28px; max-width: 700px; }
+
+    .back-link { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; text-decoration: none; width: fit-content; }
+    .back-link:hover { color: var(--text); }
+
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+
+    /* Progress bar */
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .progress-label { font-size: 13px; color: var(--muted); }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    /* Question card */
+    .question-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-number { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .question-text { font-size: 18px; font-weight: 600; line-height: 1.4; }
+
+    .options { display: flex; flex-direction: column; gap: 10px; }
+
+    .option {
+      padding: 14px 18px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .option:hover:not(.disabled) {
+      border-color: rgba(124,106,255,0.4);
+      background: rgba(124,106,255,0.06);
+    }
+
+    .option.selected {
+      border-color: var(--accent);
+      background: rgba(124,106,255,0.1);
+    }
+
+    .option.correct {
+      border-color: var(--success);
+      background: rgba(74,222,128,0.1);
+      color: var(--success);
+    }
+
+    .option.wrong {
+      border-color: var(--error);
+      background: rgba(248,113,113,0.1);
+      color: var(--error);
+    }
+
+    .option.disabled { cursor: default; }
+
+    .option-letter {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .option.correct .option-letter { background: rgba(74,222,128,0.2); }
+    .option.wrong .option-letter { background: rgba(248,113,113,0.2); }
+    .option.selected .option-letter { background: rgba(124,106,255,0.2); }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .feedback.visible { display: block; }
+    .feedback.correct { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: var(--success); }
+    .feedback.wrong { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
+
+    /* Actions */
+    .actions { display: flex; justify-content: flex-end; }
+
+    .btn-next {
+      padding: 12px 28px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    .btn-next.visible { display: block; }
+    .btn-next:hover { background: #6b5ae0; transform: translateY(-1px); }
+
+    /* Results */
+    .results-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: fadeUp 0.4s ease;
+    }
+    .results-card.visible { display: flex; }
+
+    .score-circle {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      font-family: 'Unbounded', sans-serif;
+    }
+    .score-great { background: rgba(74,222,128,0.1); border: 3px solid var(--success); }
+    .score-ok { background: rgba(251,191,36,0.1); border: 3px solid #fbbf24; }
+    .score-bad { background: rgba(248,113,113,0.1); border: 3px solid var(--error); }
+
+    .score-number { font-size: 28px; font-weight: 900; }
+    .score-total { font-size: 12px; color: var(--muted); }
+
+    .results-title { font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 700; }
+    .results-sub { font-size: 14px; color: var(--muted); }
+
+    .results-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+
+    .btn-primary { padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 10px; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+    .btn-primary:hover { background: #6b5ae0; }
+    .btn-secondary { padding: 12px 24px; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-secondary:hover { background: var(--border); }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo"><div class="logo-dot"></div>StudySquad</div>
+      <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Главная</a>
+      <a href="upload.html" class="nav-item"><span class="icon">🎙️</span> Загрузить лекцию</a>
+      <a href="#" class="nav-item"><span class="icon">📚</span> Предметы</a>
+      <a href="#" class="nav-item"><span class="icon">👥</span> Моя группа</a>
+      <a href="#" class="nav-item"><span class="icon">🧠</span> Квизы</a>
+      <div class="sidebar-bottom">
+        <div class="user-block">
+          <div class="avatar" id="avatarInitial">?</div>
+          <div class="user-info"><div class="user-name" id="userName">...</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <a class="back-link" id="backLink" href="dashboard.html">← Назад</a>
+      <h1 class="page-title" id="quizTitle">Загрузка...</h1>
+
+      <!-- Progress -->
+      <div id="progressSection" style="display:none;">
+        <div class="progress-header">
+          <span class="progress-label" id="progressLabel">Вопрос 1 из 5</span>
+          <span class="progress-label" id="scoreLabel">0 правильных</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Question -->
+      <div id="questionSection" style="display:none;">
+        <div class="question-card" id="questionCard">
+          <div class="question-number" id="questionNumber">Вопрос 1</div>
+          <div class="question-text" id="questionText"></div>
+          <div class="options" id="options"></div>
+          <div class="feedback" id="feedback"></div>
+        </div>
+        <div class="actions" style="margin-top: 16px;">
+          <button class="btn-next" id="nextBtn" onclick="nextQuestion()">
+            Следующий вопрос →
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-card" id="resultsCard">
+        <div class="score-circle" id="scoreCircle">
+          <div class="score-number" id="scoreNumber">0</div>
+          <div class="score-total" id="scoreTotal">из 5</div>
+        </div>
+        <div class="results-title" id="resultsTitle">Результат</div>
+        <div class="results-sub" id="resultsSub"></div>
+        <div class="results-actions">
+          <button class="btn-primary" onclick="restartQuiz()">🔄 Пройти снова</button>
+          <a href="dashboard.html" class="btn-secondary">← На главную</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const CONFIG = { API_URL: 'https://d5dl1rb13ng0aicdmdk1.hsvi2zuh.apigw.yandexcloud.net' }
+
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!token) { window.location.href = 'index.html' }
+    if (user) {
+      document.getElementById('userName').textContent = user.name || user.email
+      document.getElementById('avatarInitial').textContent = (user.name || user.email || '?')[0].toUpperCase()
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    const quizId = params.get('id')
+    if (!quizId) { window.location.href = 'dashboard.html' }
+
+    let questions = []
+    let currentIndex = 0
+    let score = 0
+    let answered = false
+
+    async function loadQuiz() {
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/quizzes/${quizId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = await res.json()
+
+        questions = data.questions
+        document.getElementById('quizTitle').textContent = data.title
+
+        document.getElementById('progressSection').style.display = 'block'
+        document.getElementById('questionSection').style.display = 'block'
+
+        renderQuestion()
+      } catch (e) {
+        document.getElementById('quizTitle').textContent = 'Не удалось загрузить квиз'
+      }
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex]
+      answered = false
+
+      document.getElementById('questionNumber').textContent = `Вопрос ${currentIndex + 1}`
+      document.getElementById('questionText').textContent = q.question
+      document.getElementById('progressLabel').textContent = `Вопрос ${currentIndex + 1} из ${questions.length}`
+      document.getElementById('scoreLabel').textContent = `${score} правильных`
+      document.getElementById('progressFill').style.width = `${(currentIndex / questions.length) * 100}%`
+
+      const feedback = document.getElementById('feedback')
+      feedback.className = 'feedback'
+      feedback.textContent = ''
+
+      document.getElementById('nextBtn').classList.remove('visible')
+
+      const letters = ['А', 'Б', 'В', 'Г']
+      const optionsEl = document.getElementById('options')
+      optionsEl.innerHTML = q.options.map((opt, i) => `
+        <div class="option" onclick="selectOption(this, '${opt.replace(/'/g, "\\'")}')">
+          <div class="option-letter">${letters[i]}</div>
+          <span>${opt}</span>
+        </div>
+      `).join('')
+
+      // Перезапускаем анимацию
+      const card = document.getElementById('questionCard')
+      card.style.animation = 'none'
+      card.offsetHeight
+      card.style.animation = 'fadeUp 0.3s ease'
+    }
+
+    function selectOption(el, selected) {
+      if (answered) return
+      answered = true
+
+      const correct = questions[currentIndex].answer
+      const allOptions = document.querySelectorAll('.option')
+
+      allOptions.forEach(opt => {
+        opt.classList.add('disabled')
+        const text = opt.querySelector('span').textContent
+        if (text === correct) opt.classList.add('correct')
+        else if (opt === el && text !== correct) opt.classList.add('wrong')
+      })
+
+      const feedback = document.getElementById('feedback')
+      if (selected === correct) {
+        score++
+        feedback.textContent = '✅ Правильно!'
+        feedback.className = 'feedback correct visible'
+      } else {
+        feedback.textContent = `❌ Неверно. Правильный ответ: ${correct}`
+        feedback.className = 'feedback wrong visible'
+      }
+
+      document.getElementById('scoreLabel').textContent = `${score} правильных`
+
+      const nextBtn = document.getElementById('nextBtn')
+      nextBtn.classList.add('visible')
+      nextBtn.textContent = currentIndex === questions.length - 1 ? 'Завершить →' : 'Следующий вопрос →'
+    }
+
+    function nextQuestion() {
+      currentIndex++
+      if (currentIndex >= questions.length) {
+        showResults()
+      } else {
+        renderQuestion()
+      }
+    }
+
+    function showResults() {
+      document.getElementById('progressSection').style.display = 'none'
+      document.getElementById('questionSection').style.display = 'none'
+
+      const total = questions.length
+      const pct = score / total
+
+      const circle = document.getElementById('scoreCircle')
+      if (pct >= 0.8) circle.className = 'score-circle score-great'
+      else if (pct >= 0.5) circle.className = 'score-circle score-ok'
+      else circle.className = 'score-circle score-bad'
+
+      document.getElementById('scoreNumber').textContent = score
+      document.getElementById('scoreTotal').textContent = `из ${total}`
+
+      const titles = {
+        great: ['Отлично! 🎉', 'Ты отлично знаешь материал!'],
+        ok: ['Неплохо! 💪', 'Есть над чем поработать — перечитай лекцию.'],
+        bad: ['Попробуй ещё раз 📚', 'Стоит ещё раз изучить материал.']
+      }
+      const key = pct >= 0.8 ? 'great' : pct >= 0.5 ? 'ok' : 'bad'
+      document.getElementById('resultsTitle').textContent = titles[key][0]
+      document.getElementById('resultsSub').textContent = titles[key][1]
+
+      document.getElementById('resultsCard').classList.add('visible')
+      document.getElementById('quizTitle').style.display = 'none'
+    }
+
+    function restartQuiz() {
+      currentIndex = 0
+      score = 0
+      answered = false
+      document.getElementById('resultsCard').classList.remove('visible')
+      document.getElementById('progressSection').style.display = 'block'
+      document.getElementById('questionSection').style.display = 'block'
+      document.getElementById('quizTitle').style.display = 'block'
+      renderQuestion()
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'index.html' }
+
+    loadQuiz()
+  </script>
+</body>
+</html>
