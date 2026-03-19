@@ -323,8 +323,36 @@
       }
     }
 
-    function generateQuiz() {
-      alert('Квизы — следующий шаг! 🧠')
+    async function generateQuiz() {
+      const btn = document.querySelector('.btn-primary')
+      btn.disabled = true
+      btn.textContent = '⏳ Генерируем квиз...'
+
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/quizzes`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            transcription_id: id,
+            title: 'Квиз по лекции'
+          })
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.error)
+
+        // Редирект на страницу квиза
+        window.location.href = `quiz.html?id=${data.quiz_id}`
+
+      } catch (e) {
+        alert('Не удалось создать квиз. Попробуй ещё раз.')
+        btn.disabled = false
+        btn.textContent = '🧠 Создать квиз'
+      }
     }
 
     function logout() { localStorage.clear(); window.location.href = 'index.html' }
