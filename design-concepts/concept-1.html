@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad Concept 1 — Light Minimal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f1e7;
+      --paper: #fcf8ef;
+      --text: #161515;
+      --muted: #7f7769;
+      --line: #d8d0bf;
+      --accent: #3f87b8;
+      --accent-soft: #dcecf8;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #f7f3ea 0%, #f5f1e7 60%, #efe8d6 100%);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1240px, calc(100% - 48px));
+      margin: 22px auto 30px;
+      border: 1px solid var(--line);
+      background: rgba(252, 248, 239, 0.88);
+      border-radius: 28px;
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+      background-size: 100% 34px;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+      opacity: 0.55;
+    }
+
+    header {
+      position: relative;
+      z-index: 2;
+      padding: 20px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px rgba(63, 135, 184, 0.14);
+    }
+
+    nav {
+      display: flex;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 34px;
+      padding: 34px 36px 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: 'Literata', serif;
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: 0.96;
+      letter-spacing: -0.03em;
+      max-width: 740px;
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      margin-top: 16px;
+      max-width: 480px;
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      color: inherit;
+      transition: 180ms ease;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .btn.secondary:hover { background: #f0ebdf; }
+
+    .metrics {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      height: fit-content;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 12px;
+      background: #f3ecdf;
+      border: 1px solid #e2d8c6;
+    }
+
+    .metric .k {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric .v {
+      margin-top: 6px;
+      font-family: 'Literata', serif;
+      font-size: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .landscape {
+      position: relative;
+      margin-top: 26px;
+      min-height: 280px;
+      border-top: 1px solid var(--line);
+      background:
+        radial-gradient(120% 70% at 20% 100%, #2a3f34 0%, transparent 56%),
+        radial-gradient(90% 70% at 82% 105%, #5f4d2f 0%, transparent 52%),
+        radial-gradient(85% 50% at 55% 80%, #75422b 0%, transparent 48%),
+        linear-gradient(180deg, rgba(243, 236, 223, 0) 0%, rgba(49, 39, 24, 0.45) 92%);
+      overflow: hidden;
+    }
+
+    .landscape::before,
+    .landscape::after {
+      content: '';
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      border-radius: 46% 54% 0 0;
+      opacity: 0.9;
+    }
+
+    .landscape::before {
+      bottom: 95px;
+      height: 150px;
+      background: linear-gradient(180deg, rgba(111, 96, 66, 0.58), rgba(54, 45, 29, 0.74));
+      filter: blur(0.8px);
+    }
+
+    .landscape::after {
+      bottom: -14px;
+      height: 122px;
+      background: linear-gradient(180deg, rgba(17, 17, 15, 0.75), rgba(7, 7, 6, 0.95));
+      transform: scaleY(-1);
+    }
+
+    .foot {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .metrics { max-width: 560px; }
+      .landscape { min-height: 240px; }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: calc(100% - 24px); margin: 12px auto 20px; border-radius: 22px; }
+      header { padding: 16px 16px; }
+      nav { display: none; }
+      .hero { padding: 20px 16px 0; gap: 18px; }
+      h1 { font-size: clamp(34px, 12vw, 52px); }
+      .subtitle { font-size: 18px; margin-top: 10px; }
+      .actions { margin-top: 16px; }
+      .btn { flex: 1 1 170px; text-align: center; }
+      .landscape { margin-top: 18px; min-height: 180px; }
+      .foot { left: 16px; right: 16px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="logo"><span class="logo-dot"></span>StudySquad</div>
+      <nav>
+        <span>Платформа</span>
+        <span>Транскрипции</span>
+        <span>Квизы</span>
+        <span>Личный кабинет</span>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Спокойный интерфейс для учебной дисциплины</h1>
+        <p class="subtitle">Загружай лекции, получай чистую транскрипцию и сразу закрепляй материал квизами в одном аккуратном потоке.</p>
+        <div class="actions">
+          <a class="btn primary" href="#">Открыть приложение</a>
+          <a class="btn secondary" href="#">Посмотреть демо</a>
+        </div>
+      </div>
+
+      <aside class="metrics" aria-label="Ключевые показатели">
+        <div class="metric">
+          <div class="k">Обработано лекций</div>
+          <div class="v">1 284</div>
+        </div>
+        <div class="metric">
+          <div class="k">Среднее время</div>
+          <div class="v">3:12</div>
+        </div>
+        <div class="metric">
+          <div class="k">Точность конспекта</div>
+          <div class="v">93%</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="landscape">
+      <div class="foot">
+        <span>Без визуального шума</span>
+        <span>Светлая типографическая система</span>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
