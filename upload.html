@@ -145,7 +145,7 @@
             <input type="file" id="fileInput" accept=".mp3,.mp4,.wav,.m4a,.webm,.ogg" />
             <div class="dropzone-icon">🎙️</div>
             <div class="dropzone-title">Нажми для выбора файла</div>
-            <div class="dropzone-sub">Максимум 25 МБ</div>
+            <div class="dropzone-sub">Максимум 500 МБ</div>
             <div class="dropzone-formats">MP3 · MP4 · WAV · M4A · WEBM</div>
           </div>
           <div class="file-selected" id="fileSelected">
@@ -219,7 +219,7 @@
     fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]) })
 
     function setFile(file) {
-      if (file.size > 25 * 1024 * 1024) { alert('Файл слишком большой. Максимум 25 МБ'); return }
+      if (file.size > 500 * 1024 * 1024) { alert('Файл слишком большой. Максимум 500 МБ'); return }
       selectedFile = file
       document.getElementById('fileName').textContent = file.name
       document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' МБ'
