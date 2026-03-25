@@ -51,6 +51,9 @@
     .file-size { font-size: 12px; color: var(--muted); flex-shrink: 0; }
     .file-remove { cursor: pointer; color: var(--muted); font-size: 16px; flex-shrink: 0; }
     .file-remove:hover { color: var(--error); }
+    .file-type-badge { font-size: 10px; font-family: var(--font-mono); padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+    .file-type-video { background: rgba(183,216,212,0.1); color: var(--accent); border: 1px solid rgba(183,216,212,0.2); }
+    .file-type-audio { background: rgba(184,171,206,0.1); color: var(--accent2); border: 1px solid rgba(184,171,206,0.2); }
     .progress-block { display: none; flex-direction: column; gap: 10px; }
     .progress-block.visible { display: flex; }
     .progress-label { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
@@ -121,7 +124,7 @@
       <a href="dashboard.html" class="back-link">← Назад</a>
       <div>
         <h1 class="page-title">Загрузить лекцию</h1>
-        <p class="page-sub">Загрузи аудиозапись — мы сделаем транскрипцию</p>
+        <p class="page-sub">Загрузи аудио или видео запись — мы сделаем транскрипцию</p>
       </div>
 
       <div class="form" id="uploadForm">
@@ -141,17 +144,18 @@
           </select>
         </div>
         <div class="field">
-          <label class="label">Аудиофайл</label>
+          <label class="label">Файл</label>
           <div class="dropzone" id="dropzone">
-            <input type="file" id="fileInput" accept=".mp3,.mp4,.wav,.m4a,.webm,.ogg" />
-            <div class="dropzone-icon">🎙️</div>
+            <input type="file" id="fileInput" accept=".mp3,.mp4,.wav,.m4a,.webm,.ogg,.avi,.mov,.mkv,.flv,.wmv" />
+            <div class="dropzone-icon" id="dropzoneIcon">🎙️</div>
             <div class="dropzone-title">Нажми для выбора файла</div>
             <div class="dropzone-sub">Максимум 500 МБ</div>
-            <div class="dropzone-formats">MP3 · MP4 · WAV · M4A · WEBM</div>
+            <div class="dropzone-formats">Аудио: MP3 · WAV · M4A · OGG · WEBM &nbsp;|&nbsp; Видео: MP4 · MOV · AVI · MKV</div>
           </div>
           <div class="file-selected" id="fileSelected">
-            <span>📎</span>
+            <span id="fileTypeEmoji">📎</span>
             <span class="file-name" id="fileName"></span>
+            <span class="file-type-badge" id="fileTypeBadge"></span>
             <span class="file-size" id="fileSize"></span>
             <span class="file-remove" onclick="removeFile()">✕</span>
           </div>
@@ -191,6 +195,10 @@
 
   <script>
     const CONFIG = { API_URL: 'https://d5dl1rb13ng0aicdmdk1.hsvi2zuh.apigw.yandexcloud.net' }
+
+    const AUDIO_EXTS = ['mp3', 'wav', 'm4a', 'ogg', 'webm', 'flac', 'aac']
+    const VIDEO_EXTS = ['mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'mpeg', 'mpg']
+
     const token = localStorage.getItem('token')
     const user = JSON.parse(localStorage.getItem('user') || 'null')
     if (!token) { window.location.href = 'index.html' }
@@ -219,11 +227,33 @@
     dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]) })
     fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]) })
 
+    function getFileType(filename) {
+      const ext = filename.split('.').pop().toLowerCase()
+      if (VIDEO_EXTS.includes(ext)) return 'video'
+      if (AUDIO_EXTS.includes(ext)) return 'audio'
+      return 'unknown'
+    }
+
     function setFile(file) {
       if (file.size > 500 * 1024 * 1024) { alert('Файл слишком большой. Максимум 500 МБ'); return }
+
+      const type = getFileType(file.name)
+      if (type === 'unknown') { alert('Неподдерживаемый формат файла'); return }
+
       selectedFile = file
+
+      // Обновляем иконку дропзоны
+      document.getElementById('dropzoneIcon').textContent = type === 'video' ? '🎬' : '🎙️'
+
+      // Заполняем инфо о файле
+      document.getElementById('fileTypeEmoji').textContent = type === 'video' ? '🎬' : '🎵'
       document.getElementById('fileName').textContent = file.name
       document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' МБ'
+
+      const badge = document.getElementById('fileTypeBadge')
+      badge.textContent = type === 'video' ? 'VIDEO' : 'AUDIO'
+      badge.className = `file-type-badge ${type === 'video' ? 'file-type-video' : 'file-type-audio'}`
+
       document.getElementById('fileSelected').classList.add('visible')
       dropzone.style.display = 'none'
     }
@@ -231,6 +261,7 @@
     function removeFile() {
       selectedFile = null; fileInput.value = ''
       document.getElementById('fileSelected').classList.remove('visible')
+      document.getElementById('dropzoneIcon').textContent = '🎙️'
       dropzone.style.display = 'flex'
     }
 
@@ -245,7 +276,7 @@
       document.getElementById('progressBlock').classList.add('visible')
       try {
         const uuid = crypto.randomUUID()
-        const ext = selectedFile.name.split('.').pop()
+        const ext = selectedFile.name.split('.').pop().toLowerCase()
         const filename = `${uuid}.${ext}`
         setProgress(10, 'Получаем ссылку...')
         const presignRes = await fetch(`${CONFIG.API_URL}/presign?filename=${filename}&title=${encodeURIComponent(title)}&subject_id=${subjectId}&share_group=${shareGroup}`, { headers: { Authorization: `Bearer ${token}` } })
