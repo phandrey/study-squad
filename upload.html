@@ -56,9 +56,11 @@
     .file-type-audio { background: rgba(184,171,206,0.1); color: var(--accent2); border: 1px solid rgba(184,171,206,0.2); }
     .progress-block { display: none; flex-direction: column; gap: 10px; }
     .progress-block.visible { display: flex; }
-    .progress-label { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+    .progress-row { display: flex; justify-content: space-between; align-items: center; }
+    .progress-label { font-size: 13px; color: var(--muted); }
+    .progress-speed { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
     .progress-bar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 100px; transition: width 0.3s ease; width: 0%; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 100px; transition: width 0.2s ease; width: 0%; }
     .btn-submit { padding: 14px 28px; background: var(--accent); color: white; border: none; border-radius: 10px; font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .btn-submit:hover:not(:disabled) { background: #8fbeb9; transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -150,7 +152,7 @@
             <div class="dropzone-icon" id="dropzoneIcon">🎙️</div>
             <div class="dropzone-title">Нажми для выбора файла</div>
             <div class="dropzone-sub">Максимум 500 МБ</div>
-            <div class="dropzone-formats">Аудио: MP3 · WAV · M4A · OGG · WEBM &nbsp;|&nbsp; Видео: MP4 · MOV · AVI · MKV</div>
+            <div class="dropzone-formats">Аудио: MP3 · WAV · M4A · OGG &nbsp;|&nbsp; Видео: MP4 · MOV · AVI · MKV</div>
           </div>
           <div class="file-selected" id="fileSelected">
             <span id="fileTypeEmoji">📎</span>
@@ -161,11 +163,15 @@
           </div>
         </div>
         <div class="progress-block" id="progressBlock">
-          <div class="progress-label">
-            <span id="progressLabel">Загружаем...</span>
-            <span id="progressPct">0%</span>
+          <div class="progress-row">
+            <span class="progress-label" id="progressLabel">Загружаем...</span>
+            <span class="progress-speed" id="progressSpeed"></span>
           </div>
           <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-row">
+            <span class="progress-label" id="progressPct" style="font-family: var(--font-mono); font-size: 12px;">0%</span>
+            <span class="progress-label" id="progressEta" style="font-size: 12px;"></span>
+          </div>
         </div>
         <button class="btn-submit" id="submitBtn" onclick="handleUpload()">🚀 Загрузить и транскрибировать</button>
       </div>
@@ -236,24 +242,16 @@
 
     function setFile(file) {
       if (file.size > 500 * 1024 * 1024) { alert('Файл слишком большой. Максимум 500 МБ'); return }
-
       const type = getFileType(file.name)
       if (type === 'unknown') { alert('Неподдерживаемый формат файла'); return }
-
       selectedFile = file
-
-      // Обновляем иконку дропзоны
       document.getElementById('dropzoneIcon').textContent = type === 'video' ? '🎬' : '🎙️'
-
-      // Заполняем инфо о файле
       document.getElementById('fileTypeEmoji').textContent = type === 'video' ? '🎬' : '🎵'
       document.getElementById('fileName').textContent = file.name
       document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' МБ'
-
       const badge = document.getElementById('fileTypeBadge')
       badge.textContent = type === 'video' ? 'VIDEO' : 'AUDIO'
       badge.className = `file-type-badge ${type === 'video' ? 'file-type-video' : 'file-type-audio'}`
-
       document.getElementById('fileSelected').classList.add('visible')
       dropzone.style.display = 'none'
     }
@@ -265,38 +263,104 @@
       dropzone.style.display = 'flex'
     }
 
+    function uploadWithProgress(url, file, contentType) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        const startTime = Date.now()
+        let lastLoaded = 0
+        let lastTime = startTime
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (!e.lengthComputable) return
+
+          const pct = Math.round((e.loaded / e.total) * 100)
+          const now = Date.now()
+          const elapsed = (now - lastTime) / 1000
+          const chunk = e.loaded - lastLoaded
+
+          // Скорость в МБ/с
+          let speedStr = ''
+          let etaStr = ''
+          if (elapsed > 0.5) {
+            const speedMBs = (chunk / elapsed) / (1024 * 1024)
+            speedStr = speedMBs.toFixed(1) + ' МБ/с'
+
+            const remaining = e.total - e.loaded
+            const etaSec = Math.round(remaining / (chunk / elapsed))
+            if (etaSec > 0) {
+              etaStr = etaSec < 60
+                ? `~${etaSec} сек`
+                : `~${Math.round(etaSec / 60)} мин`
+            }
+
+            lastLoaded = e.loaded
+            lastTime = now
+          }
+
+          document.getElementById('progressFill').style.width = pct + '%'
+          document.getElementById('progressPct').textContent = pct + '%'
+          document.getElementById('progressLabel').textContent = `Загружаем файл... ${(e.loaded / 1024 / 1024).toFixed(0)} / ${(e.total / 1024 / 1024).toFixed(0)} МБ`
+          if (speedStr) document.getElementById('progressSpeed').textContent = speedStr
+          if (etaStr) document.getElementById('progressEta').textContent = etaStr
+        })
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve()
+          else reject(new Error(`HTTP ${xhr.status}`))
+        })
+
+        xhr.addEventListener('error', () => reject(new Error('Ошибка сети')))
+        xhr.addEventListener('timeout', () => reject(new Error('Превышено время ожидания')))
+
+        xhr.open('PUT', url)
+        xhr.setRequestHeader('Content-Type', contentType)
+        xhr.send(file)
+      })
+    }
+
     async function handleUpload() {
       const title = document.getElementById('title').value.trim()
       const subjectId = document.getElementById('subject').value
       const shareGroup = document.getElementById('shareGroup').value
       if (!title) { alert('Введи название лекции'); return }
       if (!selectedFile) { alert('Выбери файл'); return }
+
       const btn = document.getElementById('submitBtn')
       btn.disabled = true; btn.textContent = 'Загружаем...'
       document.getElementById('progressBlock').classList.add('visible')
+
       try {
         const uuid = crypto.randomUUID()
         const ext = selectedFile.name.split('.').pop().toLowerCase()
         const filename = `${uuid}.${ext}`
-        setProgress(10, 'Получаем ссылку...')
-        const presignRes = await fetch(`${CONFIG.API_URL}/presign?filename=${filename}&title=${encodeURIComponent(title)}&subject_id=${subjectId}&share_group=${shareGroup}`, { headers: { Authorization: `Bearer ${token}` } })
+
+        document.getElementById('progressLabel').textContent = 'Получаем ссылку...'
+
+        const presignRes = await fetch(
+          `${CONFIG.API_URL}/presign?filename=${filename}&title=${encodeURIComponent(title)}&subject_id=${subjectId}&share_group=${shareGroup}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
         const { upload_url } = await presignRes.json()
-        setProgress(30, 'Загружаем файл...')
-        await fetch(upload_url, { method: 'PUT', body: selectedFile, headers: { 'Content-Type': selectedFile.type } })
-        setProgress(100, 'Готово!')
-        document.getElementById('uploadForm').style.display = 'none'
-        document.getElementById('successBlock').classList.add('visible')
+
+        // Загружаем через XHR с реальным прогрессом
+        await uploadWithProgress(upload_url, selectedFile, selectedFile.type || 'application/octet-stream')
+
+        document.getElementById('progressFill').style.width = '100%'
+        document.getElementById('progressPct').textContent = '100%'
+        document.getElementById('progressLabel').textContent = 'Готово!'
+        document.getElementById('progressSpeed').textContent = ''
+        document.getElementById('progressEta').textContent = ''
+
+        setTimeout(() => {
+          document.getElementById('uploadForm').style.display = 'none'
+          document.getElementById('successBlock').classList.add('visible')
+        }, 500)
+
       } catch (e) {
-        alert('Ошибка при загрузке. Попробуй ещё раз.')
+        alert('Ошибка при загрузке: ' + e.message)
         btn.disabled = false; btn.textContent = '🚀 Загрузить и транскрибировать'
         document.getElementById('progressBlock').classList.remove('visible')
       }
-    }
-
-    function setProgress(pct, label) {
-      document.getElementById('progressFill').style.width = pct + '%'
-      document.getElementById('progressPct').textContent = pct + '%'
-      document.getElementById('progressLabel').textContent = label
     }
 
     function logout() { localStorage.clear(); window.location.href = 'index.html' }
