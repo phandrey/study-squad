@@ -1,0 +1,193 @@
+:root {
+  --surface: rgba(8, 11, 18, 0.88);
+  --surface2: rgba(11, 15, 24, 0.9);
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: #b7d8d4;
+  --accent2: #b8abce;
+
+  --glass-fill: rgba(8, 11, 18, 0.88);
+  --glass-fill-strong: rgba(6, 9, 16, 0.94);
+  --glass-stroke: rgba(255, 255, 255, 0.12);
+  --glass-stroke-soft: rgba(255, 255, 255, 0.09);
+  --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  --glass-shadow: 0 14px 28px rgba(4, 7, 16, 0.44);
+  --glass-blur: 10px;
+}
+
+.bg::before,
+.bg::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: saturate(112%) drop-shadow(0 12px 24px rgba(7, 11, 24, 0.42));
+}
+
+.bg::before {
+  width: clamp(136px, 16vw, 240px);
+  height: clamp(136px, 16vw, 240px);
+  left: clamp(8px, 2vw, 26px);
+  bottom: clamp(8px, 2vw, 34px);
+  opacity: 0.23;
+  background-image: url('design-concepts/assets/flowers/flower-9.png');
+}
+
+.bg::after {
+  width: clamp(128px, 14vw, 220px);
+  height: clamp(128px, 14vw, 220px);
+  right: clamp(4px, 1.8vw, 22px);
+  top: clamp(40px, 12vh, 110px);
+  opacity: 0.2;
+  background-image: url('design-concepts/assets/flowers/flower-16.png');
+}
+
+.right,
+.sidebar,
+.mobile-nav,
+.mobile-header,
+.card,
+.stat-card,
+.transcription-card,
+.quiz-card,
+.transcript-card,
+.question-card,
+.results-card,
+.dropzone,
+.info-block,
+.copy-btn,
+.btn-secondary {
+  background: var(--glass-fill-strong) !important;
+  border-color: var(--glass-stroke) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(108%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(108%);
+  box-shadow: var(--glass-inner), var(--glass-shadow);
+}
+
+.stat,
+.timeline-item,
+.quiz-questions-count,
+.dropzone-formats,
+.feature-icon,
+.transcript-header,
+.tc-icon,
+.quiz-icon,
+.tab {
+  background: rgba(8, 12, 20, 0.84) !important;
+  border-color: var(--glass-stroke-soft) !important;
+  box-shadow: var(--glass-inner);
+}
+
+.stat-card,
+.transcription-card,
+.quiz-card,
+.transcript-card,
+.question-card,
+.results-card,
+.dropzone,
+.card,
+.info-block {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before,
+.transcription-card::before,
+.quiz-card::before,
+.transcript-card::before,
+.question-card::before,
+.results-card::before,
+.dropzone::before,
+.card::before,
+.info-block::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.008) 24%, transparent 52%);
+  opacity: 0.34;
+}
+
+.btn-primary,
+.btn-submit,
+.btn-start,
+.btn-next,
+.btn-yandex {
+  color: #0d1218 !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  background: linear-gradient(145deg, rgba(183, 216, 212, 0.84), rgba(184, 171, 206, 0.7)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 20px rgba(6, 10, 18, 0.34) !important;
+}
+
+.nav-item:hover,
+.quiz-card:hover,
+.transcription-card:hover,
+.btn-secondary:hover,
+.option:hover:not(.disabled) {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(11, 15, 24, 0.92) !important;
+}
+
+.btn-primary:hover,
+.btn-submit:hover:not(:disabled),
+.btn-start:hover,
+.btn-next:hover,
+.btn-yandex:hover {
+  transform: translateY(-1px);
+  filter: none !important;
+}
+
+.option.correct,
+.option.wrong,
+.feedback.correct,
+.feedback.wrong {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.input {
+  background: rgba(8, 12, 20, 0.72) !important;
+  border-color: var(--glass-stroke-soft) !important;
+}
+
+.input:focus {
+  border-color: rgba(183, 216, 212, 0.54) !important;
+}
+
+.file-selected,
+.success-block,
+.error-block {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.yandex-logo {
+  color: #0d1218 !important;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #9fe7dd !important;
+  outline-offset: 2px !important;
+}
+
+.mobile-nav-item {
+  font-size: 11px !important;
+}
+
+.nav-item.nav-disabled {
+  opacity: 0.54;
+  pointer-events: none;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .bg::after { display: none; }
+  .bg::before { opacity: 0.16; left: -4px; bottom: 12px; }
+}

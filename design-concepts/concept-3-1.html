@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad Concept 3.1 — Neon Grid + Liquid Glass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@400;500;600;700&family=Oranienbaum&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07080c;
+      --line: #5c6478;
+      --text: #fafcff;
+      --muted: #a2a9bc;
+      --accent: #b7d8d4;
+      --accent-2: #b8abce;
+      --accent-soft: rgba(183, 216, 212, 0.1);
+      --focus: #9fe7dd;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --glass-fill: rgba(8, 11, 18, 0.88);
+      --glass-fill-strong: rgba(6, 9, 16, 0.94);
+      --glass-stroke: rgba(255, 255, 255, 0.12);
+      --glass-stroke-soft: rgba(255, 255, 255, 0.10);
+      --glass-inner: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+      --glass-blur: 10px;
+      --s1: 8px;
+      --s2: 12px;
+      --s3: 16px;
+      --s4: 24px;
+      --target-min: 44px;
+      --font-display: 'Oranienbaum', serif;
+      --font-ui: 'Manrope', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0% 30%, rgba(184, 171, 206, 0.16), transparent 44%),
+        radial-gradient(circle at 100% 70%, rgba(183, 216, 212, 0.14), transparent 40%),
+        var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        radial-gradient(circle at center, rgba(218, 228, 248, 0.2) 1px, transparent 1px);
+      background-size: 100% 96px, 96px 100%, 8px 8px;
+      opacity: 0.12;
+      mix-blend-mode: screen;
+    }
+
+    .glow-left,
+    .glow-right {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 56px;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(18px);
+      opacity: 0.22;
+    }
+
+    .glow-left {
+      left: -22px;
+      background: linear-gradient(180deg, rgba(184, 171, 206, 0.4), rgba(109, 99, 125, 0.08), rgba(184, 171, 206, 0.24));
+    }
+
+    .glow-right {
+      right: -22px;
+      background: linear-gradient(180deg, rgba(183, 216, 212, 0.4), rgba(118, 146, 142, 0.08), rgba(183, 216, 212, 0.24));
+    }
+
+    .flower-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .flower {
+      position: absolute;
+      opacity: 0.34;
+      filter: blur(0.2px) saturate(112%) drop-shadow(0 12px 20px rgba(8, 10, 24, 0.34));
+      transform-origin: center;
+    }
+
+    .flower.f1 {
+      width: clamp(148px, 16vw, 248px);
+      top: 8%;
+      left: 2%;
+      transform: rotate(-12deg);
+    }
+
+    .flower.f2 {
+      width: clamp(132px, 14vw, 220px);
+      top: 58%;
+      right: 1%;
+      transform: rotate(8deg);
+      opacity: 0.3;
+    }
+
+    .flower.f3 {
+      width: clamp(140px, 15vw, 236px);
+      bottom: 3%;
+      left: 10%;
+      transform: rotate(-8deg);
+      opacity: 0.28;
+    }
+
+    .layout {
+      position: relative;
+      z-index: 1;
+      width: min(1140px, calc(100% - 30px));
+      margin: 18px auto 24px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(10, 11, 17, 0.88);
+      box-shadow: 0 22px 46px rgba(4, 6, 20, 0.6);
+    }
+
+    .layout::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(183, 216, 212, 0.07), transparent 35%),
+        radial-gradient(circle at 83% 8%, rgba(184, 171, 206, 0.08), transparent 28%);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--s3) var(--s4);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(4px);
+    }
+
+    .logo {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-mark {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 8px rgba(183, 216, 212, 0.28);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tab {
+      font-family: var(--font-mono);
+      border: 1px solid var(--glass-stroke-soft);
+      background: var(--glass-fill);
+      backdrop-filter: blur(calc(var(--glass-blur) - 4px)) saturate(122%);
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 4px)) saturate(122%);
+      box-shadow: var(--glass-inner);
+      color: #d7dced;
+      padding: 0 14px;
+      border-radius: 999px;
+      min-height: var(--target-min);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      line-height: 1.3;
+      letter-spacing: 0.02em;
+      font-weight: 500;
+      text-transform: none;
+      cursor: pointer;
+    }
+
+    .hero {
+      padding: var(--s4) var(--s4) var(--s3);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--s3);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 52px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.04;
+      max-width: 18ch;
+      color: #ffffff;
+    }
+
+    .hero p {
+      font-family: var(--font-ui);
+      margin: 0;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-ui);
+      text-decoration: none;
+      padding: 0 16px;
+      border-radius: var(--radius-sm);
+      min-height: var(--target-min);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      border: 1px solid var(--glass-stroke);
+      color: var(--text);
+      line-height: 1.25;
+      background: var(--glass-fill);
+      backdrop-filter: blur(var(--glass-blur)) saturate(128%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(128%);
+      box-shadow: var(--glass-inner);
+    }
+
+    .btn.primary {
+      color: #0d1218;
+      border-color: rgba(255, 255, 255, 0.25);
+      background:
+        linear-gradient(145deg, rgba(183, 216, 212, 0.88), rgba(184, 171, 206, 0.72)),
+        var(--accent);
+      box-shadow: var(--glass-inner), 0 10px 22px rgba(8, 13, 25, 0.28);
+    }
+
+    .btn:focus-visible,
+    .tab:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--s3);
+      padding: var(--s3) var(--s4);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel {
+      border: 1px solid var(--glass-stroke);
+      background: var(--glass-fill-strong);
+      backdrop-filter: blur(var(--glass-blur)) saturate(108%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(108%);
+      border-radius: var(--radius);
+      padding: var(--s2);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--glass-inner), 0 12px 24px rgba(4, 7, 16, 0.46);
+    }
+
+    .panel::before,
+    .panel::after {
+      content: '';
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .panel::before {
+      inset: 1px;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.008) 24%, transparent 52%);
+      opacity: 0.36;
+    }
+
+    .panel::after {
+      display: none;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-family: var(--font-ui);
+      font-size: clamp(20px, 1.15rem + 0.45vw, 26px);
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    .panel p {
+      font-family: var(--font-ui);
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      letter-spacing: 0;
+      font-size: 14px;
+      max-width: 95%;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .timeline-item {
+      padding: var(--s2);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-stroke-soft);
+      background: rgba(7, 10, 18, 0.86);
+      backdrop-filter: blur(calc(var(--glass-blur) - 3px)) saturate(106%);
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 3px)) saturate(106%);
+      box-shadow: var(--glass-inner);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .timeline-item strong {
+      font-family: var(--font-mono);
+      display: block;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      line-height: 1.3;
+      font-weight: 500;
+      text-transform: none;
+      color: #edf2ff;
+    }
+
+    .timeline-item span {
+      font-family: var(--font-ui);
+      color: #a9b2c6;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stat-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-stroke-soft);
+      background: rgba(7, 10, 18, 0.84);
+      backdrop-filter: blur(calc(var(--glass-blur) - 3px)) saturate(106%);
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 3px)) saturate(106%);
+      box-shadow: var(--glass-inner);
+      padding: var(--s2);
+    }
+
+    .stat small {
+      font-family: var(--font-mono);
+      color: #a7aec2;
+      display: block;
+      font-size: 13px;
+      line-height: 1.3;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0.03em;
+    }
+
+    .stat b {
+      margin-top: 6px;
+      font-family: var(--font-ui);
+      font-size: 24px;
+      font-weight: 700;
+      display: block;
+      color: #ffffff;
+    }
+
+    .foot {
+      font-family: var(--font-mono);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      color: #8f97ac;
+      font-size: 13px;
+      gap: 10px;
+      flex-wrap: wrap;
+      line-height: 1.3;
+      letter-spacing: 0.03em;
+      text-transform: none;
+    }
+
+    .btn:hover,
+    .tab:hover {
+      border-color: var(--glass-stroke);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .stat-list { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .layout {
+        width: calc(100% - 14px);
+        margin: 8px auto 14px;
+        border-radius: 16px;
+      }
+
+      header {
+        padding: 12px;
+        align-items: flex-start;
+        gap: 10px;
+        flex-direction: column;
+      }
+
+      .tabs { justify-content: flex-start; }
+
+      .hero,
+      .grid,
+      .foot {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .hero h1 { font-size: clamp(25px, 10vw, 42px); }
+      .hero p { font-size: 16px; }
+      .btn { flex: 1 1 160px; text-align: center; }
+      .flower.f2,
+      .flower.f3 { display: none; }
+      .flower.f1 { opacity: 0.24; top: 4%; left: -8%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-left"></div>
+  <div class="glow-right"></div>
+  <div class="flower-layer" aria-hidden="true">
+    <img class="flower f1" src="./assets/flowers/flower-4.png" alt="" />
+    <img class="flower f2" src="./assets/flowers/flower-16.png" alt="" />
+    <img class="flower f3" src="./assets/flowers/flower-9.png" alt="" />
+  </div>
+
+  <main class="layout">
+    <header>
+      <div class="logo"><span class="logo-mark"></span>STUDYSQUAD // GRID</div>
+      <div class="tabs">
+        <button type="button" class="tab">Транскрипция</button>
+        <button type="button" class="tab">Квиз</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Учись быстрее. Без визуального шума.</h1>
+      <p>Минималистичный тёмный интерфейс для транскрипций и квизов.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn primary">Открыть</a>
+        <a href="#" class="btn">Демо</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>Поток</h2>
+        <p>Загрузка. Транскрипция. Проверка.</p>
+        <div class="timeline">
+          <div class="timeline-item">
+            <strong>Шаг 01</strong>
+            <span>Загрузка</span>
+          </div>
+          <div class="timeline-item">
+            <strong>Шаг 02</strong>
+            <span>Транскрипция</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <h2>Метрики</h2>
+        <div class="stat-list">
+          <div class="stat">
+            <small>Точность</small>
+            <b>96%</b>
+          </div>
+          <div class="stat">
+            <small>Скорость</small>
+            <b>2,5 мин</b>
+          </div>
+          <div class="stat">
+            <small>Фокус</small>
+            <b>90%</b>
+          </div>
+          <div class="stat">
+            <small>Режим</small>
+            <b>GRID</b>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="foot">
+      <span>Минималистичный неон-грид</span>
+      <span>StudySquad</span>
+    </footer>
+  </main>
+</body>
+</html>

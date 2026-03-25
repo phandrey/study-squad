@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySquad Concept 4 — Liquid Glass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@400;500;600;700&family=Oranienbaum&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07090f;
+      --bg-2: #0c1221;
+      --text: rgba(255, 255, 255, 0.97);
+      --text-2: rgba(255, 255, 255, 0.86);
+      --text-3: rgba(255, 255, 255, 0.72);
+
+      --accent: #b7d8d4;
+      --accent-2: #ccb9ee;
+      --accent-2-soft: rgba(204, 185, 238, 0.28);
+      --accent-2-glow: rgba(204, 185, 238, 0.42);
+
+      --glass-fill: rgba(16, 22, 36, 0.54);
+      --glass-fill-strong: rgba(16, 22, 36, 0.68);
+      --glass-stroke: rgba(255, 255, 255, 0.18);
+      --glass-stroke-soft: rgba(255, 255, 255, 0.1);
+
+      --blur-sm: 10px;
+      --blur-md: 18px;
+      --blur-lg: 26px;
+
+      --shadow-1: 0 12px 30px rgba(0, 0, 0, 0.32);
+      --shadow-2: 0 20px 48px rgba(0, 0, 0, 0.42);
+
+      --r-sm: 14px;
+      --r-md: 22px;
+      --r-lg: 30px;
+
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 28px;
+
+      --tap-min: 48px;
+
+      --font-display: 'Oranienbaum', serif;
+      --font-ui: 'Manrope', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      color: var(--text);
+      min-height: 100dvh;
+      background:
+        radial-gradient(86% 64% at 12% 14%, rgba(183, 216, 212, 0.16), transparent 56%),
+        radial-gradient(74% 62% at 84% 22%, rgba(204, 185, 238, 0.21), transparent 54%),
+        radial-gradient(90% 72% at 80% 88%, rgba(112, 93, 154, 0.18), transparent 62%),
+        linear-gradient(162deg, var(--bg), var(--bg-2));
+      overflow-x: hidden;
+    }
+
+    .mesh {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.14) 0.85px, transparent 1px),
+        radial-gradient(circle, rgba(204, 185, 238, 0.1) 0.85px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+      background-size: 22px 22px, 44px 44px, 132px 132px, 132px 132px;
+      background-position: 0 0, 11px 11px, 0 0, 0 0;
+      opacity: 0.16;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1240px, calc(100% - 32px));
+      margin: 16px auto;
+      padding: var(--space-6);
+      border-radius: calc(var(--r-lg) + 4px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(11, 14, 22, 0.42);
+      backdrop-filter: blur(14px) saturate(115%);
+      -webkit-backdrop-filter: blur(14px) saturate(115%);
+      box-shadow: var(--shadow-2);
+      overflow: hidden;
+    }
+
+    .shell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(86% 54% at 18% 0%, rgba(255, 255, 255, 0.09), transparent 62%);
+      opacity: 0.1;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: var(--tap-min);
+      padding: 8px 10px 8px 16px;
+      border-radius: calc(var(--r-md) + 4px);
+      border: 1px solid var(--glass-stroke);
+      background: linear-gradient(135deg, rgba(183, 216, 212, 0.14), rgba(204, 185, 238, 0.18));
+      backdrop-filter: blur(var(--blur-lg)) saturate(136%);
+      -webkit-backdrop-filter: blur(var(--blur-lg)) saturate(136%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(204, 185, 238, 0.18),
+        0 12px 34px rgba(0, 0, 0, 0.34);
+    }
+
+    .topbar::before {
+      content: '';
+      position: absolute;
+      left: 1px;
+      right: 1px;
+      top: 1px;
+      height: 42%;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      color: var(--text-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow:
+        0 0 14px rgba(183, 216, 212, 0.4),
+        0 0 20px rgba(204, 185, 238, 0.45);
+    }
+
+    .nav {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-chip {
+      min-height: var(--tap-min);
+      padding: 0 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--glass-stroke-soft);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-2);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      margin-top: var(--space-6);
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 22px;
+    }
+
+    .liquid-panel {
+      position: relative;
+      border-radius: var(--r-lg);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 38%),
+        linear-gradient(130deg, rgba(183, 216, 212, 0.16), rgba(204, 185, 238, 0.2)),
+        linear-gradient(180deg, rgba(8, 12, 20, 0.44), rgba(8, 12, 20, 0.3));
+      backdrop-filter: blur(var(--blur-md)) saturate(142%);
+      -webkit-backdrop-filter: blur(var(--blur-md)) saturate(142%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.28),
+        inset 0 -12px 24px rgba(255, 255, 255, 0.03),
+        0 0 30px rgba(204, 185, 238, 0.16),
+        0 16px 34px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .liquid-panel::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(178deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.04) 26%, transparent 42%);
+      opacity: 0.78;
+      mix-blend-mode: screen;
+    }
+
+    .liquid-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(58% 36% at 80% 0%, rgba(204, 185, 238, 0.3), transparent 72%),
+        radial-gradient(44% 40% at 0% 94%, rgba(183, 216, 212, 0.2), transparent 78%);
+      opacity: 0.44;
+    }
+
+    .hero-main { padding: 32px; }
+
+    h1 {
+      margin: 0 0 14px;
+      font-family: var(--font-display);
+      font-size: clamp(42px, 4.9vw, 64px);
+      line-height: 1.08;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      max-width: 12ch;
+      color: #fff;
+      text-wrap: balance;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sub {
+      margin: 0;
+      max-width: 46ch;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn {
+      min-height: var(--tap-min);
+      padding: 0 18px;
+      border-radius: var(--r-sm);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-decoration: none;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #091019;
+      background: linear-gradient(135deg, rgba(183, 216, 212, 0.52), rgba(204, 185, 238, 0.58));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 0 20px rgba(204, 185, 238, 0.26),
+        0 8px 20px rgba(0, 0, 0, 0.28);
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .text-link {
+      min-height: var(--tap-min);
+      display: inline-flex;
+      align-items: center;
+      color: var(--text-2);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid rgba(204, 185, 238, 0.38);
+      padding-bottom: 2px;
+      transition: color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .text-link:hover {
+      color: #fff;
+      border-color: rgba(204, 185, 238, 0.7);
+    }
+
+    .metrics {
+      margin-top: 22px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.045);
+      backdrop-filter: blur(var(--blur-sm));
+      -webkit-backdrop-filter: blur(var(--blur-sm));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 18px rgba(0, 0, 0, 0.24);
+      padding: 9px 12px;
+    }
+
+    .metric small {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--text-3);
+    }
+
+    .metric b {
+      margin-top: 6px;
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .auth-panel {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .auth-header {
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-header h2 {
+      margin: 0;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    .auth-header p {
+      margin: 8px 0 0;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text-2);
+      max-width: 34ch;
+    }
+
+    .glass-button {
+      position: relative;
+      z-index: 2;
+      min-height: var(--tap-min);
+      border-radius: var(--r-sm);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: linear-gradient(135deg, rgba(183, 216, 212, 0.48), rgba(204, 185, 238, 0.56));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 0 20px rgba(204, 185, 238, 0.26),
+        0 8px 20px rgba(0, 0, 0, 0.28);
+      color: #0d1218;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 14px;
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .glass-button:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    .y-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      background: #fc3f1d;
+      color: #0d1218;
+      font-weight: 800;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+    }
+
+    .auth-note {
+      position: relative;
+      z-index: 2;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 11px 12px;
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.52;
+    }
+
+    .trust-row {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .trust-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(204, 185, 238, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(var(--blur-sm));
+      -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+
+    .glass-orb {
+      position: absolute;
+      width: 108px;
+      height: 108px;
+      border-radius: 50%;
+      top: 80px;
+      right: 26px;
+      pointer-events: none;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.1) 40%, rgba(255, 255, 255, 0.04));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+        0 0 24px rgba(204, 185, 238, 0.28),
+        0 10px 26px rgba(0, 0, 0, 0.35);
+      opacity: 0.52;
+    }
+
+    .footer {
+      position: relative;
+      z-index: 2;
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .btn:focus-visible,
+    .glass-button:focus-visible,
+    .nav-chip:focus-visible,
+    .text-link:focus-visible {
+      outline: 2px solid rgba(159, 231, 221, 0.96);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px rgba(159, 231, 221, 0.92), 0 0 0 6px rgba(159, 231, 221, 0.28);
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .glass-orb {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      :root {
+        --blur-sm: 9px;
+        --blur-md: 14px;
+        --blur-lg: 18px;
+      }
+
+      .shell {
+        width: calc(100% - 16px);
+        margin: 8px auto;
+        padding: 14px;
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px;
+      }
+
+      .logo {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .hero-main,
+      .auth-panel {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: clamp(34px, 9.2vw, 52px);
+        line-height: 1.1;
+      }
+
+      .sub {
+        font-size: 15px;
+      }
+
+      .hero-actions {
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .text-link {
+        min-height: 40px;
+      }
+
+      .trust-row {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh"></div>
+
+  <main class="shell">
+    <header class="topbar">
+      <div class="logo"><span class="logo-dot"></span>STUDYSQUAD // LIQUID GLASS</div>
+      <nav class="nav" aria-label="Главная навигация">
+        <a href="#" class="nav-chip">Лекции</a>
+        <a href="#" class="nav-chip">Квизы</a>
+        <a href="#" class="nav-chip">Группа</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <article class="hero-main liquid-panel">
+        <h1>Учись умнее, не усерднее</h1>
+        <p class="sub">Минималистичный первый экран с мягким Liquid Glass и аккуратными сиреневыми акцентами.</p>
+
+        <div class="hero-actions">
+          <a href="#" class="btn">Открыть приложение</a>
+          <a href="#" class="text-link">Смотреть демо</a>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <small>Точность транскрипции</small>
+            <b>96%</b>
+          </div>
+          <div class="metric">
+            <small>Обработка</small>
+            <b>2,5 мин</b>
+          </div>
+        </div>
+      </article>
+
+      <aside class="auth-panel liquid-panel" aria-label="Панель входа">
+        <div class="glass-orb"></div>
+
+        <div class="auth-header">
+          <h2>Добро пожаловать</h2>
+          <p>Вход через Яндекс ID в чистом стеклянном интерфейсе без перегруза.</p>
+        </div>
+
+        <a href="#" class="glass-button">
+          <span class="y-badge">Я</span>
+          Войти через Яндекс ID
+        </a>
+
+        <div class="auth-note">Пароли не храним. Авторизация проходит через OAuth-провайдера, токен выдается после успешного входа.</div>
+
+        <div class="trust-row" aria-label="Метки безопасности">
+          <span class="trust-tag">OAuth 2.0</span>
+          <span class="trust-tag">JWT + Secure</span>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <span>Concept 4 / Liquid Glass</span>
+      <span>Oranienbaum + Manrope + JetBrains Mono</span>
+    </footer>
+  </main>
+</body>
+</html>
