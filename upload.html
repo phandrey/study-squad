@@ -353,7 +353,7 @@
         xhr.addEventListener('load', () => {
           if (xhr.status < 300) {
             const etag = xhr.getResponseHeader('ETag') || xhr.getResponseHeader('etag') || ''
-            resolve(etag.replace(/"/g, ''))
+            resolve(etag) // Yandex S3 нужны кавычки в ETag
           } else {
             reject(new Error('HTTP ' + xhr.status))
           }
