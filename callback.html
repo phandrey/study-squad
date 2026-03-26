@@ -136,7 +136,15 @@
         // Отправляем code на наш API — Cloud Function обменяет на токен
         const res = await fetch(`${CONFIG.API_URL}/auth/yandex?code=${code}&redirect_uri=${encodeURIComponent(CONFIG.REDIRECT_URI)}`)
 
-        if (!res.ok) throw new Error('Ошибка сервера')
+        if (!res.ok) {
+          let details = ''
+          try {
+            details = await res.text()
+          } catch (readErr) {
+            details = ''
+          }
+          throw new Error(`Ошибка сервера (${res.status})${details ? `: ${details}` : ''}`)
+        }
 
         const data = await res.json()
 
@@ -151,7 +159,7 @@
         }, 800)
 
       } catch (e) {
-        showError('Не удалось войти. Попробуй ещё раз.')
+        showError(e.message || 'Не удалось войти. Попробуй ещё раз.')
       }
     }
 
