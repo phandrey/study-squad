@@ -340,9 +340,15 @@
 
   <script>
     // Конфиг — замени CLIENT_ID на свой из oauth.yandex.ru
+    const getRedirectUri = () => {
+      const path = window.location.pathname
+      const basePath = path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1)
+      return `${window.location.origin}${basePath}callback.html`
+    }
+
     const CONFIG = {
       CLIENT_ID: 'd99fd9a6b15043a9a332ecf4b406b68f',
-      REDIRECT_URI: 'https://sunrekay.github.io/study-squad/callback.html',
+      REDIRECT_URI: getRedirectUri(),
       API_URL: 'https://d5dl1rb13ng0aicdmdk1.hsvi2zuh.apigw.yandexcloud.net'
     }
 
