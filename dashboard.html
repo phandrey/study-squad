@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StudySquad — дашборд</title>
+  <script>(function(){try{var t=localStorage.getItem("study_theme")||"dark";document.documentElement.setAttribute("data-theme",t);if(t==="light"&&!document.getElementById("study-light-theme-css")){var l=document.createElement("link");l.rel="stylesheet";l.href="theme-3-1.css";l.id="study-light-theme-css";document.head.appendChild(l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
@@ -136,6 +137,8 @@
       .stats { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="theme-toggle.css" />
+  <script src="theme-switcher.js" defer></script>
 </head>
 <body>
   <div class="bg"></div>
