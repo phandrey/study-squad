@@ -4,28 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StudySquad — учись вместе</title>
-  <script>(function(){try{var t=localStorage.getItem("study_theme")||"dark";document.documentElement.setAttribute("data-theme",t);if(t==="light"&&!document.getElementById("study-light-theme-css")){var l=document.createElement("link");l.rel="stylesheet";l.href="theme-3-1.css";l.id="study-light-theme-css";document.head.appendChild(l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+  <script>(function(){try{var t=localStorage.getItem("study_theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@400;500;600;700&family=Oranienbaum&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0f;
-      --surface: #13131a;
-      --border: #1e1e2e;
-      --accent: #7c6aff;
-      --accent2: #ff6a9b;
-      --text: #e8e8f0;
-      --muted: #6b6b80;
+      --bg: #07080c;
+      --surface: #10131b;
+      --border: rgba(166,177,204,0.32);
+      --accent: #b7d8d4;
+      --accent2: #b8abce;
+      --text: #f5f7ff;
+      --muted: #a2a9bc;
       --radius: 16px;
+      --font-display: 'Oranienbaum', serif;
+      --font-ui: 'Manrope', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     html, body {
       height: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Golos Text', sans-serif;
+      font-family: var(--font-ui);
       overflow: hidden;
     }
 
@@ -33,16 +36,16 @@
     .bg {
       position: fixed; inset: 0; z-index: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,106,255,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,106,155,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(183,216,212,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 90%, rgba(184,171,206,0.12) 0%, transparent 55%),
         var(--bg);
     }
 
     .grid-overlay {
       position: fixed; inset: 0; z-index: 0;
       background-image:
-        linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+        linear-gradient(rgba(183,216,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(183,216,212,0.04) 1px, transparent 1px);
       background-size: 48px 48px;
     }
 
@@ -63,7 +66,7 @@
     }
 
     .logo {
-      font-family: 'Unbounded', sans-serif;
+      font-family: var(--font-display);
       font-size: 20px;
       font-weight: 700;
       letter-spacing: -0.5px;
@@ -98,19 +101,19 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(124,106,255,0.1);
-      border: 1px solid rgba(124,106,255,0.2);
+      background: rgba(183,216,212,0.10);
+      border: 1px solid rgba(183,216,212,0.2);
       border-radius: 100px;
       padding: 6px 14px;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--accent);
       font-weight: 500;
       width: fit-content;
     }
 
     h1 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(32px, 4vw, 52px);
+      font-family: var(--font-display);
+      font-size: clamp(48px, 6vw, 78px);
       font-weight: 900;
       line-height: 1.1;
       letter-spacing: -1.5px;
@@ -124,7 +127,7 @@
     }
 
     .desc {
-      font-size: 16px;
+      font-size: 17px;
       color: var(--muted);
       line-height: 1.6;
       max-width: 400px;
@@ -141,7 +144,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--muted);
     }
 
@@ -156,7 +159,7 @@
     }
 
     .footer-text {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--muted);
     }
 
@@ -180,15 +183,15 @@
     }
 
     .card-header h2 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-family: var(--font-ui);
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       margin-bottom: 8px;
     }
 
     .card-header p {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--muted);
       line-height: 1.5;
     }
@@ -198,7 +201,7 @@
       align-items: center;
       gap: 12px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .divider::before, .divider::after {
@@ -215,8 +218,8 @@
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text);
-      font-family: 'Golos Text', sans-serif;
-      font-size: 15px;
+      font-family: var(--font-ui);
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -228,10 +231,10 @@
     }
 
     .btn-yandex:hover {
-      background: rgba(124,106,255,0.1);
-      border-color: rgba(124,106,255,0.4);
+      background: rgba(183,216,212,0.10);
+      border-color: rgba(183,216,212,0.4);
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(124,106,255,0.15);
+      box-shadow: 0 8px 24px rgba(183,216,212,0.15);
     }
 
     .btn-yandex:active { transform: translateY(0); }
@@ -244,18 +247,18 @@
       font-weight: 900;
       font-size: 13px;
       color: white;
-      font-family: 'Unbounded', sans-serif;
+      font-family: var(--font-display);
       flex-shrink: 0;
     }
 
     .info-block {
-      background: rgba(124,106,255,0.06);
-      border: 1px solid rgba(124,106,255,0.15);
+      background: rgba(183,216,212,0.06);
+      border: 1px solid rgba(183,216,212,0.15);
       border-radius: 12px;
       padding: 16px;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.6;
       display: flex;
       gap: 10px;
       align-items: flex-start;
@@ -279,7 +282,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
-  <link rel="stylesheet" href="theme-toggle.css" />
+  <link rel="stylesheet" href="theme-3-1.css" />
   <script src="theme-switcher.js" defer></script>
 </head>
 <body>
@@ -343,15 +346,9 @@
 
   <script>
     // Конфиг — замени CLIENT_ID на свой из oauth.yandex.ru
-    const getRedirectUri = () => {
-      const path = window.location.pathname
-      const basePath = path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1)
-      return `${window.location.origin}${basePath}callback.html`
-    }
-
     const CONFIG = {
       CLIENT_ID: 'd99fd9a6b15043a9a332ecf4b406b68f',
-      REDIRECT_URI: getRedirectUri(),
+      REDIRECT_URI: 'https://phandrey.github.io/study-squad/callback.html',
       API_URL: 'https://d5dl1rb13ng0aicdmdk1.hsvi2zuh.apigw.yandexcloud.net'
     }
 
